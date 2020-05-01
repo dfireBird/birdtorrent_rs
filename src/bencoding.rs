@@ -41,7 +41,12 @@ fn decode_string(input: &String) -> BType {
 }
 
 fn decode_int(input: &String) -> BType {
-    BType::BInt(1)
+    let starting_pos = input.find('i').unwrap();
+    let delimiter_pos = input.find('e').unwrap();
+
+    let result = input[starting_pos + 1..delimiter_pos].parse().unwrap();
+
+    BType::BInt(result)
 }
 
 fn decode_list(input: &String) -> BType {
@@ -63,6 +68,19 @@ pub mod bttests {
         let result = match decode(&input) {
             BType::BString(result) => result,
             _ => String::from("Hmm"),
+        };
+
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn b_int() {
+        let expected_result = 10;
+        let input = String::from("i10e");
+
+        let result = match decode(&input) {
+            BType::BInt(result) => result,
+            _ => -129,
         };
 
         assert_eq!(result, expected_result);
