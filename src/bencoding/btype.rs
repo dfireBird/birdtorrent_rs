@@ -38,6 +38,10 @@ impl BList {
     pub fn new(data: Vec<Box<dyn BType>>) -> BList {
         BList(data)
     }
+
+    pub fn push(&mut self, data: Box<dyn BType>) {
+        self.0.push(data);
+    }
 }
 
 impl BType for BList {
