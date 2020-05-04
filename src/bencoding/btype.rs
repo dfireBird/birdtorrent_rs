@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 pub trait BType {
-    fn value(&self) -> String;
+    fn encode(&self) -> String;
 }
 
 pub struct BInt(i32);
@@ -13,7 +13,7 @@ impl BInt {
 }
 
 impl BType for BInt {
-    fn value(&self) -> String {
+    fn encode(&self) -> String {
         format!("i{}e", self.0)
     }
 }
@@ -27,7 +27,7 @@ impl BString {
 }
 
 impl BType for BString {
-    fn value(&self) -> String {
+    fn encode(&self) -> String {
         format!("{}:{}", self.0.len(), self.0)
     }
 }
@@ -41,13 +41,13 @@ impl BList {
 }
 
 impl BType for BList {
-    fn value(&self) -> String {
-        let mut value = String::from("l");
+    fn encode(&self) -> String {
+        let mut encoded = String::from("l");
         for contents in &self.0 {
-            value.push_str(&(contents.value()));
+            encoded.push_str(&(contents.encode()));
         }
-        value.push('e');
-        value
+        encoded.push('e');
+        encoded
     }
 }
 
@@ -60,13 +60,13 @@ impl BDict {
 }
 
 impl BType for BDict {
-    fn value(&self) -> String {
-        let mut value = String::from("d");
+    fn encode(&self) -> String {
+        let mut encoded = String::from("d");
         for (key, val) in &self.0 {
-            value.push_str(&key.value());
-            value.push_str(&val.value());
+            encoded.push_str(&key.encode());
+            encoded.push_str(&val.encode());
         }
-        value.push('e');
-        value
+        encoded.push('e');
+        encoded
     }
 }
