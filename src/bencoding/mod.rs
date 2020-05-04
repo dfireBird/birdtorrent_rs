@@ -47,14 +47,21 @@ fn decode_int(input: &str) -> (BInt, u32) {
 
 fn decode_list(input: &str) -> (BList, u32) {
     let mut starting_pos = input.find('l').unwrap() + 1;
-    let delimiter_pos = input.rfind('e').unwrap();
+    let last_char_pos = input.len();
     let mut decoded: BList = BList::new(Vec::new());
-    while starting_pos < delimiter_pos {
+
+    while starting_pos < last_char_pos {
+        if &input[starting_pos..starting_pos + 1] == "e" {
+            starting_pos += 1;
+            continue;
+        }
+
         let (result, offset) = decode(&input[starting_pos..]);
         decoded.push(result);
         starting_pos += offset as usize;
     }
-    (decoded, (delimiter_pos + 1) as u32)
+
+    (decoded, (last_char_pos) as u32)
 }
 
 fn decode_dict(input: &str) -> (BDict, u32) {
