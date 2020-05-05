@@ -3,9 +3,10 @@ pub mod btype;
 use btype::{BDict, BInt, BList, BString, BType};
 
 use std::collections::HashMap;
+use std::str;
 
-pub fn decode(input: &str) -> (Box<dyn BType>, u32) {
-    let cur = input.as_bytes()[0];
+pub fn decode(input: &Vec<u8>) -> (Box<dyn BType>, u32) {
+    let cur = input[0];
     if cur.is_ascii_digit() {
         let (result, offset) = decode_string(input);
         return (Box::new(result), offset);
@@ -28,33 +29,41 @@ pub fn decode(input: &str) -> (Box<dyn BType>, u32) {
     }
 }
 
-fn decode_string(input: &str) -> (BString, u32) {
-    let mut delimiter_pos = input.find(':').unwrap();
-
-    let length: usize = input[0..delimiter_pos].parse().unwrap();
+fn decode_string(input: &Vec<u8>) -> (BString, u32) {
+    let mut delimiter_pos = input.iter().position(|x| x == &b':').unwrap();
+    let length: usize = str::from_utf8(&input[0..delimiter_pos])
+        .unwrap()
+        .parse()
+        .unwrap();
     delimiter_pos += 1;
     let result = input.get(delimiter_pos..delimiter_pos + length).unwrap();
-    (BString::new(result), (delimiter_pos + length) as u32)
+    (
+        BString::new(str::from_utf8(result).unwrap()),
+        (delimiter_pos + length) as u32,
+    )
 }
 
-fn decode_int(input: &str) -> (BInt, u32) {
-    let delimiter_pos = input.find('e').unwrap();
+fn decode_int(input: &Vec<u8>) -> (BInt, u32) {
+    let delimiter_pos = input.iter().position(|x| x == &b'e').unwrap();
 
-    let result = input[1..delimiter_pos].parse().unwrap();
+    let result = str::from_utf8(&input[1..delimiter_pos])
+        .unwrap()
+        .parse()
+        .unwrap();
     (BInt::new(result), (delimiter_pos + 1) as u32)
 }
 
-fn decode_list(input: &str) -> (BList, u32) {
+fn decode_list(input: &Vec<u8>) -> (BList, u32) {
     let mut starting_pos: usize = 1;
     let mut decoded: BList = BList::new(Vec::new());
 
     loop {
-        if &input[starting_pos..starting_pos + 1] == "e" {
+        if &input[starting_pos..starting_pos + 1] == b"e" {
             starting_pos += 1;
             break;
         }
 
-        let (result, offset) = decode(&input[starting_pos..]);
+        let (result, offset) = decode(&input[starting_pos..].iter().cloned().collect());
         decoded.push(result);
         starting_pos += offset as usize;
     }
@@ -62,21 +71,21 @@ fn decode_list(input: &str) -> (BList, u32) {
     (decoded, (starting_pos) as u32)
 }
 
-fn decode_dict(input: &str) -> (BDict, u32) {
+fn decode_dict(input: &Vec<u8>) -> (BDict, u32) {
     let mut starting_pos: usize = 1;
     let mut decoded: BDict = BDict::new(HashMap::new());
 
     loop {
-        if &input[starting_pos..starting_pos + 1] == "e" {
+        if &input[starting_pos..starting_pos + 1] == b"e" {
             starting_pos += 1;
             break;
         }
 
-        let (key, offset) = decode_string(&input[starting_pos..]);
-        starting_pos += offset as usize;
-        let (value, offset) = decode(&input[starting_pos..]);
+        let (key, offset) = decode_string(&input[starting_pos..].iter().cloned().collect());
         starting_pos += offset as usize;
 
+        let (value, offset) = decode(&input[starting_pos..].iter().cloned().collect());
+        starting_pos += offset as usize;
         decoded.insert(key, value);
     }
 
