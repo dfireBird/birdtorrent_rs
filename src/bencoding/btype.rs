@@ -1,13 +1,15 @@
 use std::collections::HashMap;
+use std::fmt::Debug;
 
-pub trait BType {
+pub trait BType: Debug {
     fn encode(&self) -> String;
 }
 
-pub struct BInt(i32);
+#[derive(Debug)]
+pub struct BInt(i64);
 
 impl BInt {
-    pub fn new(data: i32) -> BInt {
+    pub fn new(data: i64) -> BInt {
         BInt(data)
     }
 }
@@ -18,6 +20,7 @@ impl BType for BInt {
     }
 }
 
+#[derive(Debug, Eq, Hash, PartialEq)]
 pub struct BString(String);
 
 impl BString {
@@ -32,6 +35,7 @@ impl BType for BString {
     }
 }
 
+#[derive(Debug)]
 pub struct BList(Vec<Box<dyn BType>>);
 
 impl BList {
@@ -55,11 +59,16 @@ impl BType for BList {
     }
 }
 
+#[derive(Debug)]
 pub struct BDict(HashMap<BString, Box<dyn BType>>);
 
 impl BDict {
     pub fn new(data: HashMap<BString, Box<dyn BType>>) -> BDict {
         BDict(data)
+    }
+
+    pub fn insert(&mut self, key: BString, value: Box<dyn BType>) {
+        self.0.insert(key, value);
     }
 }
 

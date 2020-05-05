@@ -63,5 +63,22 @@ fn decode_list(input: &str) -> (BList, u32) {
 }
 
 fn decode_dict(input: &str) -> (BDict, u32) {
-    (BDict::new(HashMap::new()), 32)
+    let mut starting_pos: usize = 1;
+    let mut decoded: BDict = BDict::new(HashMap::new());
+
+    loop {
+        if &input[starting_pos..starting_pos + 1] == "e" {
+            starting_pos += 1;
+            break;
+        }
+
+        let (key, offset) = decode_string(&input[starting_pos..]);
+        starting_pos += offset as usize;
+        let (value, offset) = decode(&input[starting_pos..]);
+        starting_pos += offset as usize;
+
+        decoded.insert(key, value);
+    }
+
+    (decoded, starting_pos as u32)
 }
