@@ -31,29 +31,27 @@ pub fn decode(input: &str) -> (Box<dyn BType>, u32) {
 fn decode_string(input: &str) -> (BString, u32) {
     let mut delimiter_pos = input.find(':').unwrap();
 
-    let length: usize = input[delimiter_pos - 1..delimiter_pos].parse().unwrap();
+    let length: usize = input[0..delimiter_pos].parse().unwrap();
     delimiter_pos += 1;
     let result = input.get(delimiter_pos..delimiter_pos + length).unwrap();
     (BString::new(result), (delimiter_pos + length) as u32)
 }
 
 fn decode_int(input: &str) -> (BInt, u32) {
-    let starting_pos = input.find('i').unwrap() + 1;
     let delimiter_pos = input.find('e').unwrap();
 
-    let result = input[starting_pos..delimiter_pos].parse().unwrap();
+    let result = input[1..delimiter_pos].parse().unwrap();
     (BInt::new(result), (delimiter_pos + 1) as u32)
 }
 
 fn decode_list(input: &str) -> (BList, u32) {
-    let mut starting_pos = input.find('l').unwrap() + 1;
-    let last_char_pos = input.len();
+    let mut starting_pos: usize = 1;
     let mut decoded: BList = BList::new(Vec::new());
 
-    while starting_pos < last_char_pos {
+    loop {
         if &input[starting_pos..starting_pos + 1] == "e" {
             starting_pos += 1;
-            continue;
+            break;
         }
 
         let (result, offset) = decode(&input[starting_pos..]);
@@ -61,7 +59,7 @@ fn decode_list(input: &str) -> (BList, u32) {
         starting_pos += offset as usize;
     }
 
-    (decoded, (last_char_pos) as u32)
+    (decoded, (starting_pos) as u32)
 }
 
 fn decode_dict(input: &str) -> (BDict, u32) {
