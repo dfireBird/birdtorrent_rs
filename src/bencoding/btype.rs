@@ -21,17 +21,24 @@ impl BType for BInt {
 }
 
 #[derive(Debug, Eq, Hash, PartialEq)]
-pub struct BString(String);
+pub struct BString(Vec<u8>);
 
 impl BString {
-    pub fn new(data: &str) -> BString {
-        BString(data.to_string())
+    pub fn new(data: &Vec<u8>) -> BString {
+        BString(data.clone())
     }
 }
 
 impl BType for BString {
     fn encode(&self) -> String {
-        format!("{}:{}", self.0.len(), self.0)
+        format!(
+            "{}:{}",
+            self.0.len(),
+            match std::str::from_utf8(&self.0) {
+                Ok(value) => value,
+                Err(err) => "Can't be decoded into string",
+            }
+        )
     }
 }
 

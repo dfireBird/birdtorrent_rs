@@ -38,7 +38,7 @@ fn decode_string(input: &Vec<u8>) -> (BString, u32) {
     delimiter_pos += 1;
     let result = input.get(delimiter_pos..delimiter_pos + length).unwrap();
     (
-        BString::new(str::from_utf8(result).unwrap()),
+        BString::new(&result.iter().cloned().collect()),
         (delimiter_pos + length) as u32,
     )
 }
