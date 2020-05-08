@@ -38,7 +38,7 @@ fn decode_string(input: &Vec<u8>) -> (BString, u32) {
     delimiter_pos += 1;
     let result = input.get(delimiter_pos..delimiter_pos + length).unwrap();
     (
-        BString::new(&result.iter().cloned().collect()),
+        BString::new(&to_vec(result)),
         (delimiter_pos + length) as u32,
     )
 }
@@ -63,7 +63,7 @@ fn decode_list(input: &Vec<u8>) -> (BList, u32) {
             break;
         }
 
-        let (result, offset) = decode(&input[starting_pos..].iter().cloned().collect());
+        let (result, offset) = decode(&to_vec(&input[starting_pos..]));
         decoded.push(result);
         starting_pos += offset as usize;
     }
@@ -81,13 +81,17 @@ fn decode_dict(input: &Vec<u8>) -> (BDict, u32) {
             break;
         }
 
-        let (key, offset) = decode_string(&input[starting_pos..].iter().cloned().collect());
+        let (key, offset) = decode_string(&to_vec(&input[starting_pos..]));
         starting_pos += offset as usize;
 
-        let (value, offset) = decode(&input[starting_pos..].iter().cloned().collect());
+        let (value, offset) = decode(&to_vec(&input[starting_pos..]));
         starting_pos += offset as usize;
         decoded.insert(key, value);
     }
 
     (decoded, starting_pos as u32)
+}
+
+pub fn to_vec<T: Clone>(data: &[T]) -> Vec<T> {
+    data.iter().cloned().collect()
 }

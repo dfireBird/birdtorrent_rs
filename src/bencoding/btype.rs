@@ -1,8 +1,11 @@
+use std::any::Any;
 use std::collections::HashMap;
 use std::fmt::Debug;
+use std::str;
 
 pub trait BType: Debug {
     fn encode(&self) -> String;
+    fn as_any(&self) -> &dyn Any;
 }
 
 #[derive(Debug)]
@@ -12,11 +15,19 @@ impl BInt {
     pub fn new(data: i64) -> BInt {
         BInt(data)
     }
+
+    pub fn into_int(&self) -> i64 {
+        self.0
+    }
 }
 
 impl BType for BInt {
     fn encode(&self) -> String {
         format!("i{}e", self.0)
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 
@@ -27,6 +38,13 @@ impl BString {
     pub fn new(data: &Vec<u8>) -> BString {
         BString(data.clone())
     }
+
+    pub fn into_string(&self) -> Option<String> {
+        match str::from_utf8(&self.0) {
+            Ok(value) => Some(String::from(value)),
+            Err(_) => None,
+        }
+    }
 }
 
 impl BType for BString {
@@ -34,11 +52,22 @@ impl BType for BString {
         format!(
             "{}:{}",
             self.0.len(),
-            match std::str::from_utf8(&self.0) {
+            match str::from_utf8(&self.0) {
                 Ok(value) => value,
-                Err(err) => "Can't be decoded into string",
+                Err(_) => "Can't be decoded into string",
             }
         )
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+}
+
+impl std::ops::Deref for BString {
+    type Target = Vec<u8>;
+    fn deref(&self) -> &Vec<u8> {
+        &self.0
     }
 }
 
@@ -53,6 +82,10 @@ impl BList {
     pub fn push(&mut self, data: Box<dyn BType>) {
         self.0.push(data);
     }
+
+    pub fn get(&self) -> &Vec<Box<dyn BType>> {
+        &self.0
+    }
 }
 
 impl BType for BList {
@@ -63,6 +96,10 @@ impl BType for BList {
         }
         encoded.push('e');
         encoded
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 
@@ -77,6 +114,13 @@ impl BDict {
     pub fn insert(&mut self, key: BString, value: Box<dyn BType>) {
         self.0.insert(key, value);
     }
+
+    pub fn get<T: 'static + BType>(&mut self, key: &str) -> Option<&T> {
+        match self.0.get(&BString::new(&super::to_vec(key.as_bytes()))) {
+            Some(value) => Some(value.as_any().downcast_ref::<T>().unwrap()),
+            None => None,
+        }
+    }
 }
 
 impl BType for BDict {
@@ -88,5 +132,9 @@ impl BType for BDict {
         }
         encoded.push('e');
         encoded
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
