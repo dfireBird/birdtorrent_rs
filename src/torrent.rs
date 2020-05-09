@@ -1,7 +1,10 @@
 use crate::bencoding::btype::{BDict, BInt, BList, BString};
 
+use std::convert::TryInto;
+use std::ops::Deref;
+
 #[derive(Debug)]
-struct SingleFileMetaInfo {
+pub struct SingleFileMetaInfo {
     info: SingleFileInfo,
     announce: String,
 }
@@ -15,7 +18,7 @@ struct SingleFileInfo {
 }
 
 #[derive(Debug)]
-struct MultiFileMetaInfo {
+pub struct MultiFileMetaInfo {
     info: MultiFileInfo,
     announce: String,
 }
@@ -34,7 +37,8 @@ struct File {
     path: Vec<String>,
 }
 
-enum Torrent {
+#[derive(Debug)]
+pub enum Torrent {
     SingleFileTorrent(SingleFileMetaInfo),
     MultiFileTorrent(MultiFileMetaInfo),
 }
@@ -49,7 +53,7 @@ pub fn parse_torrent_data(torrent_meta_data: &BDict) -> Torrent {
 
     let name = info.get::<BString>("name").unwrap().into_string().unwrap();
     let piece_length = info.get::<BInt>("piece length").unwrap().into_int();
-    let pieces = Vec::new();
+    let pieces = make_pieces(&*info.get::<BString>("pieces").unwrap());
 
     let torrent: Torrent;
     match info.get::<BList>("files") {
@@ -101,4 +105,17 @@ pub fn parse_torrent_data(torrent_meta_data: &BDict) -> Torrent {
     };
 
     torrent
+}
+
+fn make_pieces(pieces: &Vec<u8>) -> Vec<[u8; 20]> {
+    let mut pieces_array = Vec::new();
+
+    let mut i = 0;
+    while i < pieces.len() {
+        let single_piece: [u8; 20] = pieces[i..i + 20].try_into().unwrap();
+        pieces_array.push(single_piece);
+        i += 20
+    }
+
+    pieces_array
 }
