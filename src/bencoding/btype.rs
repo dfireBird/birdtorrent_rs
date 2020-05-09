@@ -115,7 +115,7 @@ impl BDict {
         self.0.insert(key, value);
     }
 
-    pub fn get<T: 'static + BType>(&mut self, key: &str) -> Option<&T> {
+    pub fn get<T: 'static + BType>(&self, key: &str) -> Option<&T> {
         match self.0.get(&BString::new(&super::to_vec(key.as_bytes()))) {
             Some(value) => Some(value.as_any().downcast_ref::<T>().unwrap()),
             None => None,
