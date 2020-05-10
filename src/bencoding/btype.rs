@@ -3,6 +3,8 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 use std::str;
 
+use crate::utility::to_vec;
+
 pub trait BType: Debug {
     fn encode(&self) -> String;
     fn as_any(&self) -> &dyn Any;
@@ -116,7 +118,7 @@ impl BDict {
     }
 
     pub fn get<T: 'static + BType>(&self, key: &str) -> Option<&T> {
-        match self.0.get(&BString::new(&super::to_vec(key.as_bytes()))) {
+        match self.0.get(&BString::new(&to_vec(key.as_bytes()))) {
             Some(value) => Some(value.as_any().downcast_ref::<T>().unwrap()),
             None => None,
         }

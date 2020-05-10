@@ -5,6 +5,8 @@ pub use btype::{BDict, BInt, BList, BString, BType};
 use std::collections::HashMap;
 use std::str;
 
+use crate::utility::to_vec;
+
 pub fn decode(input: &Vec<u8>) -> (Box<dyn BType>, u32) {
     let cur = input[0];
     if cur.is_ascii_digit() {
@@ -90,8 +92,4 @@ fn decode_dict(input: &Vec<u8>) -> (BDict, u32) {
     }
 
     (decoded, starting_pos as u32)
-}
-
-pub fn to_vec<T: Clone>(data: &[T]) -> Vec<T> {
-    data.iter().cloned().collect()
 }
