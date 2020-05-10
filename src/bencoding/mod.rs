@@ -1,6 +1,6 @@
 pub mod btype;
 
-use btype::{BDict, BInt, BList, BString, BType};
+pub use btype::{BDict, BInt, BList, BString, BType};
 
 use std::collections::HashMap;
 use std::str;
