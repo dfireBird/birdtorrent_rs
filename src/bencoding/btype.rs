@@ -6,7 +6,7 @@ use std::str;
 use crate::utility::to_vec;
 
 pub trait BType: Debug {
-    fn encode(&self) -> String;
+    fn encode(&self) -> Vec<u8>;
     fn as_any(&self) -> &dyn Any;
 }
 
@@ -24,8 +24,8 @@ impl BInt {
 }
 
 impl BType for BInt {
-    fn encode(&self) -> String {
-        format!("i{}e", self.0)
+    fn encode(&self) -> Vec<u8> {
+        format!("i{}e", self.0).as_bytes().to_vec()
     }
 
     fn as_any(&self) -> &dyn Any {
@@ -50,15 +50,10 @@ impl BString {
 }
 
 impl BType for BString {
-    fn encode(&self) -> String {
-        format!(
-            "{}:{}",
-            self.0.len(),
-            match str::from_utf8(&self.0) {
-                Ok(value) => value,
-                Err(_) => "Can't be decoded into string",
-            }
-        )
+    fn encode(&self) -> Vec<u8> {
+        let mut encoded = format!("{}:", self.0.len()).as_bytes().to_vec();
+        encoded.append(&mut self.0);
+        encoded
     }
 
     fn as_any(&self) -> &dyn Any {
@@ -91,12 +86,12 @@ impl BList {
 }
 
 impl BType for BList {
-    fn encode(&self) -> String {
-        let mut encoded = String::from("l");
+    fn encode(&self) -> Vec<u8> {
+        let mut encoded = String::from("l").as_bytes().to_vec();
         for contents in &self.0 {
-            encoded.push_str(&(contents.encode()));
+            encoded.append(&mut contents.encode());
         }
-        encoded.push('e');
+        encoded.push(b'e');
         encoded
     }
 
@@ -126,13 +121,13 @@ impl BDict {
 }
 
 impl BType for BDict {
-    fn encode(&self) -> String {
-        let mut encoded = String::from("d");
+    fn encode(&self) -> Vec<u8> {
+        let mut encoded = String::from("d").as_bytes().to_vec();
         for (key, val) in &self.0 {
-            encoded.push_str(&key.encode());
-            encoded.push_str(&val.encode());
+            encoded.append(&mut key.encode());
+            encoded.append(&mut val.encode());
         }
-        encoded.push('e');
+        encoded.push(b'e');
         encoded
     }
 
