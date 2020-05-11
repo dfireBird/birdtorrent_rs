@@ -2,7 +2,7 @@ pub mod btype;
 
 pub use btype::{BDict, BInt, BList, BString, BType};
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::str;
 
 use crate::utility::to_vec;
@@ -75,7 +75,7 @@ fn decode_list(input: &Vec<u8>) -> (BList, u32) {
 
 fn decode_dict(input: &Vec<u8>) -> (BDict, u32) {
     let mut starting_pos: usize = 1;
-    let mut decoded: BDict = BDict::new(HashMap::new());
+    let mut decoded: BDict = BDict::new(BTreeMap::new());
 
     loop {
         if &input[starting_pos..starting_pos + 1] == b"e" {

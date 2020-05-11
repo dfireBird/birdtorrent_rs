@@ -1,6 +1,7 @@
 use std::any::Any;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::fmt::Debug;
+use std::hash::{Hash, Hasher};
 use std::str;
 
 use crate::utility::to_vec;
@@ -33,7 +34,7 @@ impl BType for BInt {
     }
 }
 
-#[derive(Debug, Eq, Hash, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub struct BString(Vec<u8>);
 
 impl BString {
@@ -52,7 +53,7 @@ impl BString {
 impl BType for BString {
     fn encode(&self) -> Vec<u8> {
         let mut encoded = format!("{}:", self.0.len()).as_bytes().to_vec();
-        encoded.append(&mut self.0);
+        encoded.append(&mut self.0.clone());
         encoded
     }
 
@@ -101,10 +102,10 @@ impl BType for BList {
 }
 
 #[derive(Debug)]
-pub struct BDict(HashMap<BString, Box<dyn BType>>);
+pub struct BDict(BTreeMap<BString, Box<dyn BType>>);
 
 impl BDict {
-    pub fn new(data: HashMap<BString, Box<dyn BType>>) -> BDict {
+    pub fn new(data: BTreeMap<BString, Box<dyn BType>>) -> BDict {
         BDict(data)
     }
 
