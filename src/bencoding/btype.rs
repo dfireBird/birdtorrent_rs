@@ -115,7 +115,7 @@ impl BDict {
 
     pub fn get<T: 'static + BType>(&self, key: &str) -> Option<&T> {
         match self.0.get(&BString::new(&to_vec(key.as_bytes()))) {
-            Some(value) => Some(value.as_any().downcast_ref::<T>().unwrap()),
+            Some(value) => value.as_any().downcast_ref::<T>(),
             None => None,
         }
     }

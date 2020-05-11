@@ -1,7 +1,6 @@
-use crate::bencoding::btype::{BDict, BInt, BList, BString};
+use crate::bencoding::{BDict, BInt, BList, BString};
 
 use std::convert::TryInto;
-use std::ops::Deref;
 
 #[derive(Debug)]
 pub struct SingleFileMetaInfo {
@@ -43,6 +42,17 @@ pub enum Torrent {
     MultiFileTorrent(MultiFileMetaInfo),
 }
 
+impl Torrent {
+    pub fn get_announce(&self) -> String {
+        let announce = match self {
+            Torrent::SingleFileTorrent(meta_data) => &meta_data.announce,
+            Torrent::MultiFileTorrent(meta_data) => &meta_data.announce,
+        };
+
+        String::from(announce)
+    }
+}
+
 pub fn parse_torrent_data(torrent_meta_data: &BDict) -> Torrent {
     let announce = torrent_meta_data
         .get::<BString>("announce")
@@ -53,7 +63,7 @@ pub fn parse_torrent_data(torrent_meta_data: &BDict) -> Torrent {
 
     let name = info.get::<BString>("name").unwrap().into_string().unwrap();
     let piece_length = info.get::<BInt>("piece length").unwrap().into_int();
-    let pieces = make_pieces(&*info.get::<BString>("pieces").unwrap());
+    let pieces = make_pieces(&info.get::<BString>("pieces").unwrap().to_vec());
 
     let torrent: Torrent;
     match info.get::<BList>("files") {
