@@ -7,18 +7,13 @@ use crate::utility::{PeerId, PORT};
 use url::form_urlencoded;
 
 use std::borrow::Cow;
+use std::convert::TryInto;
+use std::net::Ipv4Addr;
 
 #[derive(Debug)]
-pub struct Peers {
-    peer_id: Vec<u8>,
-    ip: String,
-    port: i64,
-}
-
-#[derive(Debug)]
-pub enum PeerModel {
-    CompactPeer(Vec<u8>),
-    VerbosePeer(Vec<Peers>),
+pub struct Peer {
+    ip: Ipv4Addr,
+    port: u16,
 }
 
 #[derive(Debug)]
@@ -26,7 +21,7 @@ pub struct TrackerResponse {
     interval: i64,
     complete: i64,
     incomplete: i64,
-    peer_list: PeerModel,
+    peer_list: Vec<Peer>,
 }
 
 pub fn announce(
@@ -35,13 +30,12 @@ pub fn announce(
     uploaded: i64,
     downloaded: i64,
     left: i64,
-    compact: Option<bool>,
     event: Option<&str>,
 ) -> TrackerResponse {
     let mut announce_url = torrent_data.get_announce();
     let info_hash = utility::hash(info.encode());
 
-    let query = create_tracker_query(info_hash, uploaded, downloaded, left, compact, event);
+    let query = create_tracker_query(info_hash, uploaded, downloaded, left, event);
 
     announce_url.push('?');
     announce_url.push_str(&query);
@@ -70,7 +64,6 @@ fn create_tracker_query(
     uploaded: i64,
     downloaded: i64,
     left: i64,
-    compact: Option<bool>,
     event: Option<&str>,
 ) -> String {
     let mut PEER_ID = PeerId::new();
@@ -80,7 +73,8 @@ fn create_tracker_query(
         .append_pair("port", &PORT.to_string())
         .append_pair("uploaded", &uploaded.to_string())
         .append_pair("downloaded", &downloaded.to_string())
-        .append_pair("left", &left.to_string());
+        .append_pair("left", &left.to_string())
+        .append_pair("compact", "1");
 
     match event {
         Some(event_id) => {
@@ -89,17 +83,6 @@ fn create_tracker_query(
                 _ => &mut form_urlencoded::Serializer::new(String::new()),
             };
             ()
-        }
-        None => (),
-    }
-
-    match compact {
-        Some(value) => {
-            if value {
-                query.append_pair("compact", "1");
-            } else {
-                query.append_pair("compact", "0");
-            }
         }
         None => (),
     }
@@ -133,36 +116,30 @@ fn parse_tracker_response(tracker_response: &BDict) -> TrackerResponse {
         .unwrap()
         .into_int();
 
-    let compact = match tracker_response.get::<BString>("peers") {
-        Some(_) => true,
-        None => false,
-    };
-
-    if compact {
-        let compact_peer = tracker_response.get::<BString>("peers").unwrap().to_vec();
-        TrackerResponse {
-            interval,
-            complete,
-            incomplete,
-            peer_list: PeerModel::CompactPeer(compact_peer),
-        }
-    } else {
-        let peers_list = tracker_response.get::<BList>("peers").unwrap();
-        let mut peer_list = Vec::new();
-        for peer in peers_list.get() {
-            let peer = peer.as_any().downcast_ref::<BDict>().unwrap();
-            let peer_id = peer.get::<BString>("peer id").unwrap().to_vec();
-            let ip = peer.get::<BString>("ip").unwrap().into_string().unwrap();
-            let port = peer.get::<BInt>("port").unwrap().into_int();
-
-            peer_list.push(Peers { peer_id, ip, port });
-        }
-
-        TrackerResponse {
-            interval,
-            complete,
-            incomplete,
-            peer_list: PeerModel::VerbosePeer(peer_list),
-        }
+    let peer_list = tracker_response.get::<BString>("peers").unwrap().to_vec();
+    TrackerResponse {
+        interval,
+        complete,
+        incomplete,
+        peer_list: parse_peers_string(peer_list),
     }
+}
+
+fn parse_peers_string(peers_string: Vec<u8>) -> Vec<Peer> {
+    if peers_string.len() % 6 != 0 {
+        panic!("Invalid Peer String");
+    }
+
+    let mut peer_list = Vec::new();
+
+    let mut i = 0;
+    while i < peers_string.len() {
+        let ip: [u8; 4] = peers_string[i..i + 4].try_into().unwrap();
+        let port: [u8; 2] = peers_string[i + 4..i + 6].try_into().unwrap();
+        let ip = Ipv4Addr::from(ip);
+        let port = u16::from_be_bytes(port);
+        peer_list.push(Peer { ip, port });
+        i += 6;
+    }
+    peer_list
 }
