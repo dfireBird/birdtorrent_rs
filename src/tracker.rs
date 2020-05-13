@@ -26,16 +26,16 @@ pub struct TrackerResponse {
 
 pub fn announce(
     torrent_data: Torrent,
-    info: &BDict,
+    info_hash: &Vec<u8>,
+    peer_id: &mut PeerId,
     uploaded: i64,
     downloaded: i64,
     left: i64,
     event: Option<&str>,
 ) -> TrackerResponse {
     let mut announce_url = torrent_data.get_announce();
-    let info_hash = utility::hash(info.encode());
 
-    let query = create_tracker_query(info_hash, uploaded, downloaded, left, event);
+    let query = create_tracker_query(info_hash, peer_id, uploaded, downloaded, left, event);
 
     announce_url.push('?');
     announce_url.push_str(&query);
@@ -60,16 +60,16 @@ async fn get(url: &str) -> Vec<u8> {
 }
 
 fn create_tracker_query(
-    info_hash: Vec<u8>,
+    info_hash: &Vec<u8>,
+    peer_id: &mut utility::PeerId,
     uploaded: i64,
     downloaded: i64,
     left: i64,
     event: Option<&str>,
 ) -> String {
-    let mut PEER_ID = PeerId::new();
     let mut query = form_urlencoded::Serializer::new(String::new());
     query
-        .append_pair("peer_id", &PEER_ID.value())
+        .append_pair("peer_id", &peer_id.value())
         .append_pair("port", &PORT.to_string())
         .append_pair("uploaded", &uploaded.to_string())
         .append_pair("downloaded", &downloaded.to_string())
