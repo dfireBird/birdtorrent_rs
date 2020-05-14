@@ -1,6 +1,5 @@
 use crate::bencoding;
-use crate::bencoding::{BDict, BInt, BList, BString, BType};
-use crate::torrent::Torrent;
+use crate::bencoding::{BDict, BInt, BString};
 use crate::utility;
 use crate::utility::{PeerId, PORT};
 
@@ -25,7 +24,7 @@ pub struct TrackerResponse {
 }
 
 pub fn announce(
-    torrent_data: Torrent,
+    announce_url: String,
     info_hash: &Vec<u8>,
     peer_id: &mut PeerId,
     uploaded: i64,
@@ -33,7 +32,7 @@ pub fn announce(
     left: i64,
     event: Option<&str>,
 ) -> TrackerResponse {
-    let mut announce_url = torrent_data.get_announce();
+    let mut announce_url = announce_url.clone();
 
     let query = create_tracker_query(info_hash, peer_id, uploaded, downloaded, left, event);
 
