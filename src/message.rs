@@ -9,6 +9,25 @@ pub enum MessageId {
     Piece = 7,
     Cancel = 8,
     Port = 9,
+    Invalid = 999,
+}
+
+impl MessageId {
+    pub fn new(id: u32) -> MessageId {
+        match id {
+            0 => MessageId::Choke,
+            1 => MessageId::UnChoke,
+            2 => MessageId::Interested,
+            3 => MessageId::NotInterested,
+            4 => MessageId::Have,
+            5 => MessageId::Bitfield,
+            6 => MessageId::Request,
+            7 => MessageId::Piece,
+            8 => MessageId::Cancel,
+            9 => MessageId::Port,
+            _ => MessageId::Invalid,
+        }
+    }
 }
 
 pub fn serialize_message(id: MessageId, payload: Option<Vec<u8>>) -> Vec<u8> {
