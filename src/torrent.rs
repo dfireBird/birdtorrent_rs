@@ -6,6 +6,7 @@ use std::convert::TryInto;
 pub struct SingleFileMetaInfo {
     info: SingleFileInfo,
     announce: String,
+    pieces: Vec<u8>,
 }
 
 #[derive(Debug)]
@@ -20,6 +21,7 @@ struct SingleFileInfo {
 pub struct MultiFileMetaInfo {
     info: MultiFileInfo,
     announce: String,
+    pieces: Vec<u8>,
 }
 
 #[derive(Debug)]
@@ -64,6 +66,14 @@ impl Torrent {
             }
         }
     }
+
+    pub fn set_piece(&mut self, index: u32) {
+        match self {
+            Torrent::MultiFileTorrent(meta_data) => meta_data.pieces[index as usize] = 1,
+
+            Torrent::SingleFileTorrent(meta_data) => meta_data.pieces[index as usize] = 1,
+        }
+    }
 }
 
 pub fn parse_torrent_data(torrent_meta_data: &BDict) -> Torrent {
@@ -103,6 +113,7 @@ pub fn parse_torrent_data(torrent_meta_data: &BDict) -> Torrent {
 
             torrent = Torrent::MultiFileTorrent(MultiFileMetaInfo {
                 announce,
+                pieces: vec![0; piece_length as usize],
                 info: MultiFileInfo {
                     name,
                     files,
@@ -117,6 +128,7 @@ pub fn parse_torrent_data(torrent_meta_data: &BDict) -> Torrent {
 
             torrent = Torrent::SingleFileTorrent(SingleFileMetaInfo {
                 announce,
+                pieces: vec![0; piece_length as usize],
                 info: SingleFileInfo {
                     name,
                     length,
