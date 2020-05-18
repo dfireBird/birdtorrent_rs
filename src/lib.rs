@@ -1,4 +1,6 @@
 mod bencoding;
+mod message;
+mod p2p;
 mod torrent;
 mod tracker;
 mod utility;

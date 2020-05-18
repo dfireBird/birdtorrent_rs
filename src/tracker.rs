@@ -7,12 +7,22 @@ use url::form_urlencoded;
 
 use std::borrow::Cow;
 use std::convert::TryInto;
-use std::net::Ipv4Addr;
+use std::net::{IpAddr, Ipv4Addr};
 
 #[derive(Debug)]
 pub struct Peer {
     ip: Ipv4Addr,
     port: u16,
+}
+
+impl Peer {
+    pub fn get_ip(&self) -> IpAddr {
+        IpAddr::V4(self.ip)
+    }
+
+    pub fn get_port(&self) -> u16 {
+        self.port
+    }
 }
 
 #[derive(Debug)]

@@ -1,13 +1,30 @@
+use crate::bencoding::{BDict, BType};
+
 use sha1::{Digest, Sha1};
+
+use std::fmt::Write;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 pub const PORT: i32 = 6882;
+
+pub fn generate_info_hash(torrent: &BDict) -> Vec<u8> {
+    let info = torrent.get::<BDict>("info").unwrap();
+    hash(info.encode())
+}
 
 pub fn hash(input: Vec<u8>) -> Vec<u8> {
     let mut hasher = Sha1::new();
     hasher.input(input);
     let result = hasher.result();
     to_vec(&result[..])
+}
+
+pub fn encode_hex(bytes: &[u8]) -> String {
+    let mut s = String::with_capacity(bytes.len() * 2);
+    for &b in bytes {
+        write!(&mut s, "{:02x}", b);
+    }
+    s
 }
 
 pub fn to_vec<T: Clone>(data: &[T]) -> Vec<T> {

@@ -51,6 +51,19 @@ impl Torrent {
 
         String::from(announce)
     }
+
+    pub fn get_length(&self) -> i64 {
+        match self {
+            Torrent::SingleFileTorrent(meta_data) => meta_data.info.length,
+            Torrent::MultiFileTorrent(meta_data) => {
+                let mut length = 0i64;
+                for file in &meta_data.info.files {
+                    length += file.length;
+                }
+                length
+            }
+        }
+    }
 }
 
 pub fn parse_torrent_data(torrent_meta_data: &BDict) -> Torrent {
