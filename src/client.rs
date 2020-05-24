@@ -1,6 +1,5 @@
 use crate::message;
 use crate::message::MessageId;
-use crate::torrent::Torrent;
 use crate::tracker::Peer;
 use crate::utility::encode_hex;
 
@@ -10,11 +9,12 @@ use std::net::{SocketAddr, TcpStream};
 #[allow(non_upper_case_globals)]
 const pstr: &str = "BitTorrent protocol";
 
-enum MessageReturn {
+pub enum MessageReturn {
     Have(u32),
     Piece((u32, u32, Vec<u8>)),
 }
 
+#[derive(Debug)]
 pub struct Client {
     info_hash: Vec<u8>,
     peer_id: String,
@@ -49,23 +49,35 @@ impl Client {
         }
     }
 
-    pub fn receive_message<T>(
-        &mut self,
-        torrent_data: Torrent,
-    ) -> (MessageId, Option<MessageReturn>) {
+    pub fn is_choked(&mut self) -> bool {
+        self.choked
+    }
+
+    pub fn has_piece(&mut self, index: u32) -> bool {
+        match &self.bitfield {
+            Some(bitfield) if bitfield[index as usize] == 1 => true,
+            _ => false,
+        }
+    }
+
+    pub fn receive_message(&mut self) -> (MessageId, Option<MessageReturn>) {
         let mut length = [0u8; 4];
         self.connection.read(&mut length).unwrap();
         let length = u32::from_be_bytes(length);
         if length == 0 {
-            return (MessageId::Invalid, None);
+            return (MessageId::KeepAlive, None);
         }
         let mut message_id = [0u8; 1];
         self.connection.read(&mut message_id).unwrap();
         let message_id = MessageId::new(message_id[0] as u32);
         match message_id {
             MessageId::UnChoke => {
-                self.unchoked();
+                self.set_choked(false);
                 (MessageId::UnChoke, None)
+            }
+            MessageId::Choke => {
+                self.set_choked(true);
+                (MessageId::Choke, None)
             }
             MessageId::Have => (
                 MessageId::Have,
@@ -197,7 +209,7 @@ impl Client {
         (index, begin, block)
     }
 
-    fn unchoked(&mut self) {
-        self.choked = false;
+    fn set_choked(&mut self, state: bool) {
+        self.choked = state;
     }
 }

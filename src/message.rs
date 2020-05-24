@@ -9,6 +9,7 @@ pub enum MessageId {
     Piece = 7,
     Cancel = 8,
     Port = 9,
+    KeepAlive,
     Invalid = 999,
 }
 
