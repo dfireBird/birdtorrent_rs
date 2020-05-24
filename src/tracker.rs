@@ -9,7 +9,7 @@ use std::borrow::Cow;
 use std::convert::TryInto;
 use std::net::{IpAddr, Ipv4Addr};
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Peer {
     ip: Ipv4Addr,
     port: u16,
@@ -31,6 +31,12 @@ pub struct TrackerResponse {
     complete: i64,
     incomplete: i64,
     peer_list: Vec<Peer>,
+}
+
+impl TrackerResponse {
+    pub fn get_peer_list(&self) -> Vec<Peer> {
+        self.peer_list.to_vec()
+    }
 }
 
 pub fn announce(

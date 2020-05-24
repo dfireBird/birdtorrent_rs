@@ -67,6 +67,20 @@ impl Torrent {
         }
     }
 
+    pub fn get_piece_hash(&self, index: u32) -> &[u8; 20] {
+        match self {
+            Torrent::MultiFileTorrent(meta_data) => &meta_data.info.pieces[index as usize],
+            Torrent::SingleFileTorrent(meta_data) => &meta_data.info.pieces[index as usize],
+        }
+    }
+
+    pub fn get_piece_length(&self) -> i64 {
+        match self {
+            Torrent::MultiFileTorrent(meta_data) => meta_data.info.piece_length,
+            Torrent::SingleFileTorrent(meta_data) => meta_data.info.piece_length,
+        }
+    }
+
     pub fn set_piece(&mut self, index: u32) {
         match self {
             Torrent::MultiFileTorrent(meta_data) => meta_data.pieces[index as usize] = 1,
@@ -113,7 +127,7 @@ pub fn parse_torrent_data(torrent_meta_data: &BDict) -> Torrent {
 
             torrent = Torrent::MultiFileTorrent(MultiFileMetaInfo {
                 announce,
-                pieces: vec![0; piece_length as usize],
+                pieces: vec![0; pieces.len()],
                 info: MultiFileInfo {
                     name,
                     files,
@@ -128,7 +142,7 @@ pub fn parse_torrent_data(torrent_meta_data: &BDict) -> Torrent {
 
             torrent = Torrent::SingleFileTorrent(SingleFileMetaInfo {
                 announce,
-                pieces: vec![0; piece_length as usize],
+                pieces: vec![0; pieces.len()],
                 info: SingleFileInfo {
                     name,
                     length,
