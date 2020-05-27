@@ -1,5 +1,5 @@
 [package]
-name = "torrente_rs"
+name = "birdtorrent_rs"
 version = "0.1.0"
 authors = ["dfireBird <aadhishrm11@gmail.com>"]
 edition = "2018"
