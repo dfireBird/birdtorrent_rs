@@ -1,0 +1,33 @@
+#+TITLE: birdtorrent_rs
+#+STARTUP: overview
+birdtorrent-rs simple bittorrent protocol implementation in Rust.
+
+* Table of Contents :toc:
+- [[#overview][Overview]]
+- [[#todo-how-to-use][TODO: How to use]]
+- [[#references][References]]
+  - [[#bittorent-specification][Bittorent Specification]]
+  - [[#sample-torrents][Sample Torrents]]
+- [[#license][License]]
+
+* Overview
+Bittorrent is peer-to-peer file sharing protocol designed by Bram Cohen.
+This is project made to improve my understand in Rust and also learn more about
+implementing a protocol and using TCP.
+
+* TODO: How to use
+[WIP]
+
+* References
+** Bittorent Specification
+[[https://www.howtogeek.com/141257/htg-explains-how-does-bittorrent-work/][How does Bittorent work - Overview]]
+[[https://youtu.be/Pe3b9bdRtiE][Implementing BitTorrent using AsyncIO in Python]]
+[[https://en.wikipedia.org/wiki/Torrent_file][Torrent Files]]
+[[https://www.bittorrent.org/beps/bep_0003.html][Specification (Official Site)]]
+[[https://wiki.theory.org/index.php/BitTorrentSpecification][Specification (Unofficila Site)]]
+** Sample Torrents
+[[https://webtorrent.io/free-torrents][WebTorrent free torrent]]
+[[https://archive.org/][Internet Archive]]
+
+* License
+This projects uses a MIT license, which can be viewed [[file:LICENSE][here]]
