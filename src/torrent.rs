@@ -17,11 +17,33 @@ struct SingleFileInfo {
     pieces: Vec<[u8; 20]>,
 }
 
+impl SingleFileMetaInfo {
+    pub fn get_name(&self) -> &str {
+        &self.info.name
+    }
+}
+
 #[derive(Debug)]
 pub struct MultiFileMetaInfo {
     info: MultiFileInfo,
     announce: String,
     pieces: Vec<u8>,
+}
+
+impl MultiFileMetaInfo {
+    pub fn get_files(&self, piece_index: u32) -> Vec<File> {
+        let mut files = Vec::new();
+        for file in self.info.files.to_vec() {
+            if file.piece_ext.0 <= piece_index && file.piece_ext.1 >= piece_index {
+                files.push(file)
+            }
+        }
+        files
+    }
+
+    pub fn get_name(&self) -> &str {
+        &self.info.name
+    }
 }
 
 #[derive(Debug)]
@@ -32,10 +54,29 @@ struct MultiFileInfo {
     pieces: Vec<[u8; 20]>,
 }
 
-#[derive(Debug)]
-struct File {
+#[derive(Clone, Debug)]
+pub struct File {
     length: i64,
     path: Vec<String>,
+    piece_ext: (u32, u32),
+}
+
+impl File {
+    pub fn get_length(&self) -> i64 {
+        self.length
+    }
+
+    pub fn get_path(&self) -> Vec<String> {
+        self.path.to_vec()
+    }
+
+    pub fn get_start_index(&self) -> u32 {
+        self.piece_ext.0
+    }
+
+    pub fn get_end_index(&self) -> u32 {
+        self.piece_ext.1
+    }
 }
 
 #[derive(Debug)]
@@ -107,6 +148,7 @@ pub fn parse_torrent_data(torrent_meta_data: &BDict) -> Torrent {
         Some(file_list) => {
             let file_list = file_list.get();
             let mut files: Vec<File> = Vec::new();
+            let mut piece_start = 0_f32;
             for file in file_list {
                 let file = file.as_any().downcast_ref::<BDict>().unwrap();
                 let length = file.get::<BInt>("length").unwrap().into_int();
@@ -121,8 +163,15 @@ pub fn parse_torrent_data(torrent_meta_data: &BDict) -> Torrent {
                         .unwrap();
                     path.push(paths);
                 }
+                let piece_end = length as f32 / piece_length as f32;
 
-                files.push(File { path, length });
+                files.push(File {
+                    path,
+                    length,
+                    piece_ext: (piece_start as u32, (piece_end + piece_start) as u32),
+                });
+
+                piece_start += piece_end;
             }
 
             torrent = Torrent::MultiFileTorrent(MultiFileMetaInfo {

@@ -27,7 +27,11 @@ pub struct Client {
 impl Client {
     pub fn new(info_hash: &Vec<u8>, peer_id: &str, peer: Peer) -> Option<Client> {
         let socket = SocketAddr::new(peer.get_ip(), peer.get_port());
-        let mut connection = TcpStream::connect(socket).unwrap();
+        let mut connection =
+            match TcpStream::connect_timeout(&socket, std::time::Duration::new(10, 0)) {
+                Ok(connection) => connection,
+                Err(_) => return None,
+            };
         let mut client = Client {
             info_hash: info_hash.to_vec(),
             peer_id: peer_id.to_string(),
@@ -43,7 +47,7 @@ impl Client {
                 Some(client)
             }
             Err(error) => {
-                eprintln!("{}", error);
+                eprintln!("Error: {}", error);
                 None
             }
         }
