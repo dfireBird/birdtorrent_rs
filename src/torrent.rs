@@ -1,15 +1,16 @@
 use crate::bencoding::{BDict, BInt, BList, BString};
 
+use rand::Rng;
 use std::convert::TryInto;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct SingleFileMetaInfo {
     info: SingleFileInfo,
     announce: String,
     pieces: Vec<u8>,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 struct SingleFileInfo {
     name: String,
     length: i64,
@@ -23,7 +24,7 @@ impl SingleFileMetaInfo {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct MultiFileMetaInfo {
     info: MultiFileInfo,
     announce: String,
@@ -46,7 +47,7 @@ impl MultiFileMetaInfo {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 struct MultiFileInfo {
     name: String,
     files: Vec<File>,
@@ -79,7 +80,7 @@ impl File {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum Torrent {
     SingleFileTorrent(SingleFileMetaInfo),
     MultiFileTorrent(MultiFileMetaInfo),
@@ -128,6 +129,42 @@ impl Torrent {
 
             Torrent::SingleFileTorrent(meta_data) => meta_data.pieces[index as usize] = 1,
         }
+    }
+
+    pub fn get_piece(&self, index: u32) -> u8 {
+        match self {
+            Torrent::MultiFileTorrent(meta_data) => meta_data.pieces[index as usize],
+            Torrent::SingleFileTorrent(meta_data) => meta_data.pieces[index as usize],
+        }
+    }
+
+    pub fn generate_piece_index(&self) -> u32 {
+        let total_length = match self {
+            Torrent::MultiFileTorrent(meta_data) => meta_data.pieces.len(),
+            Torrent::SingleFileTorrent(meta_data) => meta_data.pieces.len(),
+        };
+        let mut piece_index = rand::thread_rng().gen_range(0, total_length as u32);
+        if self.get_piece(piece_index) == 1 {
+            piece_index = self.generate_piece_index();
+        }
+
+        piece_index
+    }
+
+    pub fn is_completed(&self) -> bool {
+        let pieces = match self {
+            Torrent::MultiFileTorrent(meta_data) => meta_data.pieces,
+            Torrent::SingleFileTorrent(meta_data) => meta_data.pieces,
+        };
+
+        let mut downloaded = 0;
+        for piece in pieces {
+            if piece == 1 {
+                downloaded += 1;
+            }
+        }
+
+        downloaded == pieces.len()
     }
 }
 
