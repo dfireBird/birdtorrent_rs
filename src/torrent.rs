@@ -153,12 +153,12 @@ impl Torrent {
 
     pub fn is_completed(&self) -> bool {
         let pieces = match self {
-            Torrent::MultiFileTorrent(meta_data) => meta_data.pieces,
-            Torrent::SingleFileTorrent(meta_data) => meta_data.pieces,
+            Torrent::MultiFileTorrent(meta_data) => &meta_data.pieces,
+            Torrent::SingleFileTorrent(meta_data) => &meta_data.pieces,
         };
 
         let mut downloaded = 0;
-        for piece in pieces {
+        for piece in pieces.to_vec() {
             if piece == 1 {
                 downloaded += 1;
             }
