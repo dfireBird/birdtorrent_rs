@@ -21,10 +21,15 @@ implementing a protocol and using TCP.
 * References
 ** Bittorent Specification
 [[https://www.howtogeek.com/141257/htg-explains-how-does-bittorrent-work/][How does Bittorent work - Overview]]
+
 [[https://youtu.be/Pe3b9bdRtiE][Implementing BitTorrent using AsyncIO in Python]]
+
 [[https://en.wikipedia.org/wiki/Torrent_file][Torrent Files]]
+
 [[https://www.bittorrent.org/beps/bep_0003.html][Specification (Official Site)]]
-[[https://wiki.theory.org/index.php/BitTorrentSpecification][Specification (Unofficila Site)]]
+
+[[https://wiki.theory.org/index.php/BitTorrentSpecification][Specification (Unofficial Site)]]
+
 ** Sample Torrents
 [[https://webtorrent.io/free-torrents][WebTorrent free torrent]]
 [[https://archive.org/][Internet Archive]]
