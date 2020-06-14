@@ -1,46 +1,17 @@
+use super::{Peer, TrackerResponse};
+
 use crate::bencoding;
 use crate::bencoding::{BDict, BInt, BString};
-use crate::utility;
 use crate::utility::{PeerId, PORT};
 
 use url::form_urlencoded;
 
 use std::borrow::Cow;
 use std::convert::TryInto;
-use std::net::{IpAddr, Ipv4Addr};
-
-#[derive(Clone, Debug)]
-pub struct Peer {
-    ip: Ipv4Addr,
-    port: u16,
-}
-
-impl Peer {
-    pub fn get_ip(&self) -> IpAddr {
-        IpAddr::V4(self.ip)
-    }
-
-    pub fn get_port(&self) -> u16 {
-        self.port
-    }
-}
-
-#[derive(Debug)]
-pub struct TrackerResponse {
-    interval: i64,
-    complete: i64,
-    incomplete: i64,
-    peer_list: Vec<Peer>,
-}
-
-impl TrackerResponse {
-    pub fn get_peer_list(&self) -> Vec<Peer> {
-        self.peer_list.to_vec()
-    }
-}
+use std::net::Ipv4Addr;
 
 pub fn announce(
-    announce_url: String,
+    announce_url: &str,
     info_hash: &Vec<u8>,
     peer_id: &mut PeerId,
     uploaded: i64,
@@ -48,8 +19,7 @@ pub fn announce(
     left: i64,
     event: Option<&str>,
 ) -> TrackerResponse {
-    let mut announce_url = announce_url.clone();
-
+    let mut announce_url = announce_url.to_string();
     let query = create_tracker_query(info_hash, peer_id, uploaded, downloaded, left, event);
 
     announce_url.push('?');
@@ -76,7 +46,7 @@ async fn get(url: &str) -> Vec<u8> {
 
 fn create_tracker_query(
     info_hash: &Vec<u8>,
-    peer_id: &mut utility::PeerId,
+    peer_id: &mut PeerId,
     uploaded: i64,
     downloaded: i64,
     left: i64,
