@@ -94,12 +94,12 @@ fn parse_tracker_response(tracker_response: &BDict) -> TrackerResponse {
         None => (),
     }
 
-    let interval = tracker_response.get::<BInt>("interval").unwrap().into_int();
-    let complete = tracker_response.get::<BInt>("complete").unwrap().into_int();
+    let interval = tracker_response.get::<BInt>("interval").unwrap().into_int() as u32;
+    let complete = tracker_response.get::<BInt>("complete").unwrap().into_int() as u32;
     let incomplete = tracker_response
         .get::<BInt>("incomplete")
         .unwrap()
-        .into_int();
+        .into_int() as u32;
 
     let peer_list = tracker_response.get::<BString>("peers").unwrap().to_vec();
     TrackerResponse {
@@ -120,9 +120,8 @@ fn parse_peers_string(peers_string: Vec<u8>) -> Vec<Peer> {
     let mut i = 0;
     while i < peers_string.len() {
         let ip: [u8; 4] = peers_string[i..i + 4].try_into().unwrap();
-        let port: [u8; 2] = peers_string[i + 4..i + 6].try_into().unwrap();
         let ip = Ipv4Addr::from(ip);
-        let port = u16::from_be_bytes(port);
+        let port = u16::from_be_bytes(peers_string[i + 4..i + 6].try_into().unwrap());
         peer_list.push(Peer { ip, port });
         i += 6;
     }
