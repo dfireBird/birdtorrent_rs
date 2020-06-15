@@ -41,9 +41,9 @@ pub fn announce(
     announce_url: String,
     info_hash: &Vec<u8>,
     peer_id: &mut PeerId,
-    uploaded: i64,
-    downloaded: i64,
-    left: i64,
+    uploaded: u32,
+    downloaded: u32,
+    left: u32,
     event: Option<&str>,
 ) -> TrackerResponse {
     let announce_url = Url::parse(&announce_url).unwrap();
