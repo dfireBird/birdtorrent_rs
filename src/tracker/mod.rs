@@ -25,9 +25,9 @@ impl Peer {
 
 #[derive(Debug)]
 pub struct TrackerResponse {
-    interval: i64,
-    complete: i64,
-    incomplete: i64,
+    interval: u32,
+    complete: u32,
+    incomplete: u32,
     peer_list: Vec<Peer>,
 }
 
@@ -41,9 +41,9 @@ pub fn announce(
     announce_url: String,
     info_hash: &Vec<u8>,
     peer_id: &mut PeerId,
-    uploaded: u32,
-    downloaded: u32,
-    left: u32,
+    uploaded: i64,
+    downloaded: i64,
+    left: i64,
     event: Option<&str>,
 ) -> TrackerResponse {
     let announce_url = Url::parse(&announce_url).unwrap();
