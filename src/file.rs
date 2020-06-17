@@ -52,7 +52,7 @@ fn write_piece_multi_file(
 
         let path = file_data.get_path();
         fs::create_dir_all(format!("{}/{}", name, path[..path.len() - 1].join("/"))).unwrap();
-        let filename = &path[path.len() - 1];
+        let filename = &format!("{}/{}", name, path.join("/"));
 
         let mut file = match OpenOptions::new().write(true).open(filename) {
             Ok(file) => file,
