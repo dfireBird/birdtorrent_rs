@@ -14,8 +14,8 @@ pub fn generate_info_hash(torrent: &BDict) -> Vec<u8> {
 
 pub fn hash(input: Vec<u8>) -> Vec<u8> {
     let mut hasher = Sha1::new();
-    hasher.input(input);
-    let result = hasher.result();
+    hasher.update(input);
+    let result = hasher.finalize();
     to_vec(&result[..])
 }
 
