@@ -2,6 +2,9 @@
 #+STARTUP: overview
 birdtorrent-rs simple bittorrent protocol implementation in Rust.
 
+The Project is still in WIP and I currently not doing this project.
+I will restart this project later.
+
 * Table of Contents :toc:
 - [[#overview][Overview]]
 - [[#todo-how-to-use][TODO: How to use]]
